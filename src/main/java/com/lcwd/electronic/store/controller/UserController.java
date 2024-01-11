@@ -4,6 +4,7 @@ package com.lcwd.electronic.store.controller;
 import com.lcwd.electronic.store.dtos.ApiResponseMessage;
 import com.lcwd.electronic.store.dtos.UserDto;
 import com.lcwd.electronic.store.services.UserService;
+import jakarta.validation.Valid;
 import org.hibernate.sql.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,7 +22,7 @@ public class UserController {
     private UserService userService;
     //create
     @PostMapping
-    public ResponseEntity<UserDto>createUser(@RequestBody UserDto userDto){
+    public ResponseEntity<UserDto>createUser(@Valid @RequestBody UserDto userDto){
       UserDto userDto1=userService.createUser(userDto);
       return new ResponseEntity<>(userDto1, HttpStatus.CREATED);
     }
@@ -31,7 +32,7 @@ public class UserController {
     @PutMapping("/{userId}")
     public ResponseEntity<UserDto> updatedUser(
             @PathVariable("userId") String userId,
-            @RequestBody UserDto userDto
+            @Valid@RequestBody UserDto userDto
     ){
         UserDto updatedUserDto=userService.updatedUser(userDto,userId);
         return new ResponseEntity<>(updatedUserDto,HttpStatus.OK);
