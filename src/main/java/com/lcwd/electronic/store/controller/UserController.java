@@ -7,17 +7,24 @@ import com.lcwd.electronic.store.dtos.PageableResponse;
 import com.lcwd.electronic.store.dtos.UserDto;
 import com.lcwd.electronic.store.services.FileService;
 import com.lcwd.electronic.store.services.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.hibernate.sql.Update;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 @RestController
@@ -32,6 +39,9 @@ public class UserController {
 
     @Value("${user.profile.image.path}")
     private String imageUploadPath;
+
+
+    Logger logger= LoggerFactory.getLogger(UserController.class);
     //create
     @PostMapping
     public ResponseEntity<UserDto>createUser(@Valid @RequestBody UserDto userDto){
@@ -53,7 +63,7 @@ public class UserController {
 
     //delete
     @DeleteMapping("/{userId}")
-    public ResponseEntity<ApiResponseMessage>deleteuser(@PathVariable String userId){
+    public ResponseEntity<ApiResponseMessage>deleteuser(@PathVariable String userId) throws IOException {
         userService.deleteUser(userId);
         ApiResponseMessage message=ApiResponseMessage.builder().message("User is deleted").success(true).status(HttpStatus.OK).build();
         return new ResponseEntity<>(message,HttpStatus.OK);
@@ -99,5 +109,14 @@ public class UserController {
         UserDto userDto=userService.updatedUser(user,userId);
         ImageResponse imageResponse=ImageResponse.builder().imageName(imageName).success(true).status(HttpStatus.CREATED).build();
         return new ResponseEntity<>(imageResponse,HttpStatus.CREATED);
+    }
+    //serve user image
+    @GetMapping("/image/{userId}")
+    public void serveUserImage(@PathVariable String userId, HttpServletResponse response) throws IOException {
+        UserDto user=userService.getUserById(userId);
+        logger.info("User image name : {}",user.getImageName());
+        InputStream resource=fileService.getResources(imageUploadPath,user.getImageName());
+        response.setContentType(MediaType.IMAGE_JPEG_VALUE);
+        StreamUtils.copy(resource,response.getOutputStream());
     }
 }
