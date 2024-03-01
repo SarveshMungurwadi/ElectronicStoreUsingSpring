@@ -1,12 +1,12 @@
 package com.lcwd.electronic.store.entities;
 
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Getter
@@ -24,7 +24,9 @@ public class Category {
     @Column(name = "category_title",length = 60)
     private String title;
     @Column(name = "category_desc",length = 500)
-
     private String description;
     private String coverImage;
+
+    @OneToMany(mappedBy = "category",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private List<Product> products=new ArrayList<>();
 }
